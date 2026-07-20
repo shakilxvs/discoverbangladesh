@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* next-themes toggles a `.dark` class on <html>; redefine the dark:
+   variant to match class-based rather than Tailwind v4's default
+   prefers-color-scheme behavior. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, sans-serif;
+
+  /* River & monsoon blue — the site's primary palette */
+  --color-river-50: #eff6fa;
+  --color-river-100: #dcebf3;
+  --color-river-200: #b8d6e8;
+  --color-river-300: #8cbbd9;
+  --color-river-400: #5a9ac4;
+  --color-river-500: #3a7caa;
+  --color-river-600: #2a628c;
+  --color-river-700: #234f71;
+  --color-river-800: #1f425d;
+  --color-river-900: #1b384e;
+  --color-river-950: #10232f;
+
+  /* Monsoon gold — small accent use: ratings, featured badges, active tags */
+  --color-monsoon-50: #fbf6e9;
+  --color-monsoon-100: #f5e9c4;
+  --color-monsoon-300: #e8cc7a;
+  --color-monsoon-400: #e3b23c;
+  --color-monsoon-500: #d19b1f;
+  --color-monsoon-600: #b07f16;
+  --color-monsoon-700: #8c6412;
+  --color-monsoon-950: #3d2b08;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-river-500);
+    outline-offset: 2px;
+  }
+}
