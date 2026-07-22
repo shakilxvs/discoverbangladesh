@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { MapPin } from 'lucide-react';
+import { MapPin, Image as ImageIcon } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { getSpotBySlug, getPublishedSpots, getRelatedSpots } from '@/lib/spots';
 import { getCategories } from '@/lib/categories';
@@ -90,12 +90,19 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
         </div>
       </div>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={spot.featuredImage}
-        alt={spot.name}
-        className="mb-6 aspect-[16/9] w-full rounded-2xl object-cover"
-      />
+      {spot.featuredImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={spot.featuredImage}
+          alt={spot.name}
+          className="mb-6 aspect-[16/9] w-full rounded-2xl object-cover"
+        />
+      ) : (
+        <div className="mb-6 flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-river-50 to-river-100 text-river-300 dark:from-river-950 dark:to-neutral-900 dark:text-river-800">
+          <ImageIcon className="h-10 w-10" />
+          <span className="text-sm">No photo yet</span>
+        </div>
+      )}
 
       <div className="mb-8 flex flex-wrap gap-3">
         <LocationButton url={spot.locationUrl} />
