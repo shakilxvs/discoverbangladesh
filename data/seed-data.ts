@@ -1,8 +1,8 @@
-// This file is ONLY imported by scripts/seed.ts (a one-time setup script).
-// The app itself never imports this — at runtime, categories, sub-categories
-// and districts are read live from Firestore, and are fully manageable from
-// the Admin Panel from that point on. This file exists purely to populate
-// the initial state.
+// Imported by both scripts/seed.ts (the CLI script) and lib/seed-client.ts
+// (the in-admin "Seed default data" button). The app itself never imports
+// this — at runtime, categories, sub-categories and districts are read
+// live from Firestore, and are fully manageable from the Admin Panel from
+// that point on. This file exists purely to populate the initial state.
 
 export interface SeedCategory {
   name: string;
