@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { collection, getCountFromServer, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { MapPin, MessageSquare, Tags, Layers, MapPinned, Images } from 'lucide-react';
+import { SeedPanel } from '@/components/admin/SeedPanel';
 
 const statDefs = [
   { key: 'spots', label: 'Total Spots', icon: MapPin },
@@ -17,48 +18,49 @@ const statDefs = [
 export default function AdminDashboard() {
   const [counts, setCounts] = useState<Record<string, number> | null>(null);
 
-  useEffect(() => {
-    async function run() {
-      const [spots, comments, categories, subCategories, districts] = await Promise.all([
-        getCountFromServer(collection(db, 'spots')).catch(() => null),
-        getCountFromServer(collection(db, 'comments')).catch(() => null),
-        getCountFromServer(collection(db, 'categories')).catch(() => null),
-        getCountFromServer(collection(db, 'subCategories')).catch(() => null),
-        getCountFromServer(collection(db, 'districts')).catch(() => null),
-      ]);
+  const refreshCounts = useCallback(async () => {
+    const [spots, comments, categories, subCategories, districts] = await Promise.all([
+      getCountFromServer(collection(db, 'spots')).catch(() => null),
+      getCountFromServer(collection(db, 'comments')).catch(() => null),
+      getCountFromServer(collection(db, 'categories')).catch(() => null),
+      getCountFromServer(collection(db, 'subCategories')).catch(() => null),
+      getCountFromServer(collection(db, 'districts')).catch(() => null),
+    ]);
 
-      // Images aren't a simple count — each spot has a featured image plus
-      // a variable-length gallery — so this one reads the actual docs
-      // rather than using an aggregation query.
-      let images = 0;
-      try {
-        const spotDocs = await getDocs(collection(db, 'spots'));
-        spotDocs.forEach((d) => {
-          const data = d.data();
-          images += (data.featuredImage ? 1 : 0) + (data.galleryImages?.length ?? 0);
-        });
-      } catch {
-        images = 0;
-      }
-
-      setCounts({
-        spots: spots?.data().count ?? 0,
-        images,
-        comments: comments?.data().count ?? 0,
-        categories: categories?.data().count ?? 0,
-        subCategories: subCategories?.data().count ?? 0,
-        districts: districts?.data().count ?? 0,
+    // Images aren't a simple count — each spot has a featured image plus
+    // a variable-length gallery — so this one reads the actual docs
+    // rather than using an aggregation query.
+    let images = 0;
+    try {
+      const spotDocs = await getDocs(collection(db, 'spots'));
+      spotDocs.forEach((d) => {
+        const data = d.data();
+        images += (data.featuredImage ? 1 : 0) + (data.galleryImages?.length ?? 0);
       });
+    } catch {
+      images = 0;
     }
-    run();
+
+    setCounts({
+      spots: spots?.data().count ?? 0,
+      images,
+      comments: comments?.data().count ?? 0,
+      categories: categories?.data().count ?? 0,
+      subCategories: subCategories?.data().count ?? 0,
+      districts: districts?.data().count ?? 0,
+    });
   }, []);
+
+  useEffect(() => {
+    refreshCounts();
+  }, [refreshCounts]);
 
   return (
     <div>
       <h1 className="mb-6 font-display text-2xl font-semibold text-neutral-900 dark:text-white">
         Dashboard
       </h1>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         {statDefs.map(({ key, label, icon: Icon }) => (
           <div
             key={key}
@@ -72,6 +74,7 @@ export default function AdminDashboard() {
           </div>
         ))}
       </div>
+      <SeedPanel onSeeded={refreshCounts} />
     </div>
   );
 }
