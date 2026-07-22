@@ -1,6 +1,8 @@
 import { MapPin } from 'lucide-react';
 
 export function LocationButton({ url }: { url: string }) {
+  if (!url) return null;
+
   return (
     <a
       href={url}
