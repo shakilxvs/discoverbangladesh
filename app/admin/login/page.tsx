@@ -5,6 +5,26 @@ import { useRouter } from 'next/navigation';
 import { LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
+function describeAuthError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? '';
+  switch (code) {
+    case 'auth/unauthorized-domain':
+      return "This domain isn't authorized in Firebase yet — add it under Authentication → Settings → Authorized domains, then try again.";
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Email or password is incorrect, or that user doesn\'t exist yet in Firebase Authentication → Users.';
+    case 'auth/popup-closed-by-user':
+      return 'Google sign-in was closed before finishing — try again.';
+    case 'auth/popup-blocked':
+      return 'Your browser blocked the Google sign-in popup — allow popups for this site and try again.';
+    case 'auth/network-request-failed':
+      return 'Network error reaching Firebase — check your connection and try again.';
+    default:
+      return code ? `Sign-in failed (${code}).` : 'Sign-in failed. Please try again.';
+  }
+}
+
 export default function AdminLoginPage() {
   const { signInWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
@@ -20,8 +40,8 @@ export default function AdminLoginPage() {
     try {
       await signInWithEmail(email, password);
       router.replace('/admin');
-    } catch {
-      setError('Could not sign in with that email and password.');
+    } catch (err) {
+      setError(describeAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -33,8 +53,8 @@ export default function AdminLoginPage() {
     try {
       await signInWithGoogle();
       router.replace('/admin');
-    } catch {
-      setError('Google sign-in failed.');
+    } catch (err) {
+      setError(describeAuthError(err));
     } finally {
       setLoading(false);
     }
