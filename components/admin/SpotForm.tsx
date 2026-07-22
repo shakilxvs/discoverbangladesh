@@ -292,7 +292,7 @@ export function SpotForm({ spot }: { spot?: Spot }) {
         <h2 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
           Status &amp; visibility
         </h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Status">
             <select
               value={status}
