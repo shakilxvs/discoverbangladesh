@@ -7,6 +7,9 @@ import { getPublishedSpots } from '@/lib/spots';
 import { SpotCard } from '@/components/site/SpotCard';
 import { slugify } from '@/lib/utils';
 
+// See app/(site)/page.tsx for why this is needed.
+export const dynamic = 'force-dynamic';
+
 type Params = Promise<{ slug: string; subSlug: string; district: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
