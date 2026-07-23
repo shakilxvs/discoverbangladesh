@@ -6,6 +6,10 @@ import { getSubCategories, filterSubCategoriesByCategories } from '@/lib/sub-cat
 import { getPublishedSpots } from '@/lib/spots';
 import { SpotCard } from '@/components/site/SpotCard';
 
+// See app/(site)/page.tsx for why this is needed — without it this page
+// is frozen at build time and never reflects data added afterward.
+export const dynamic = 'force-dynamic';
+
 type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
