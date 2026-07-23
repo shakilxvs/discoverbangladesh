@@ -6,6 +6,9 @@ import { getSpotBySlug, getPublishedSpots, getRelatedSpots } from '@/lib/spots';
 import { getCategories } from '@/lib/categories';
 import { getSubCategories } from '@/lib/sub-categories';
 import { getCommentsForSpot, summarizeRating } from '@/lib/comments';
+
+// See app/(site)/page.tsx for why this is needed.
+export const dynamic = 'force-dynamic';
 import { Gallery } from '@/components/site/Gallery';
 import { VideoEmbed } from '@/components/site/VideoEmbed';
 import { LocationButton } from '@/components/site/LocationButton';
