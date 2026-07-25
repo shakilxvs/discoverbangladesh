@@ -127,8 +127,8 @@ export function SpotForm({ spot }: { spot?: Spot }) {
     e.preventDefault();
     setSlugError('');
 
-    if (!name.trim() || !slug.trim() || !district || !featuredImage.trim() || !locationUrl.trim()) {
-      toast.error('Name, district, featured image and location URL are required.');
+    if (!name.trim() || !slug.trim() || !district) {
+      toast.error('Name and district are required.');
       return;
     }
 
@@ -234,7 +234,6 @@ export function SpotForm({ spot }: { spot?: Spot }) {
         </Field>
         <Field
           label="Location URL"
-          required
           hint="Map link — visitors only ever see a 'Location' button, never the raw URL."
         >
           <input
@@ -250,7 +249,7 @@ export function SpotForm({ spot }: { spot?: Spot }) {
         <h2 className="font-display text-lg font-semibold text-neutral-900 dark:text-white">
           Media
         </h2>
-        <Field label="Featured Image URL" required>
+        <Field label="Featured Image URL">
           <input
             value={featuredImage}
             onChange={(e) => setFeaturedImage(e.target.value)}
