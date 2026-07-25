@@ -6,9 +6,6 @@ import { getSpotBySlug, getPublishedSpots, getRelatedSpots } from '@/lib/spots';
 import { getCategories } from '@/lib/categories';
 import { getSubCategories } from '@/lib/sub-categories';
 import { getCommentsForSpot, summarizeRating } from '@/lib/comments';
-
-// See app/(site)/page.tsx for why this is needed.
-export const dynamic = 'force-dynamic';
 import { Gallery } from '@/components/site/Gallery';
 import { VideoEmbed } from '@/components/site/VideoEmbed';
 import { LocationButton } from '@/components/site/LocationButton';
@@ -16,6 +13,9 @@ import { ShareButton } from '@/components/site/ShareButton';
 import { CommentsSection } from '@/components/site/CommentsSection';
 import { RelatedSpots } from '@/components/site/RelatedSpots';
 import { StarRatingDisplay } from '@/components/site/StarRating';
+
+// See app/(site)/page.tsx for why this is needed.
+export const dynamic = 'force-dynamic';
 
 const statusLabels: Record<string, string> = {
   open: 'Open',
