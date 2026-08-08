@@ -59,7 +59,7 @@ export default async function CategoryPage({ params }: { params: Params }) {
           No published spots in this category yet.
         </div>
       ) : (
-        <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {categorySpots.map((spot) => (
             <SpotCard key={spot.id} spot={spot} />
           ))}
