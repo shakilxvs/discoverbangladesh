@@ -9,15 +9,26 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { stripUndefined } from './utils';
 import type { Comment } from '@/types';
 
 const commentsRef = collection(db, 'comments');
 
-// Single equality filter — sorting and hidden-filtering happen client-side
-// so this never needs a composite index. A spot's comment count is small
-// enough in practice that this is simpler than a server-side aggregate.
+// Public spot-page lookup. Like getSpotBySlug in lib/spots.ts and
+// getActiveHeroSlides in lib/hero-slides.ts, this MUST filter in the query
+// itself on every field the security rule checks — firestore.rules only
+// grants read on /comments when `resource.data.hidden != true` (or admin).
+// Filtering on spotId alone isn't provable safe from the query, so
+// Firestore rejected the whole list request with a permission error on
+// every public visit — that's what was surfacing as "This page couldn't
+// load" on every /spot/[slug] page (the spot page loads comments via
+// Promise.all, so this exception took the whole page down with it).
+// Matching the query to the rule fixes it; sorting stays client-side so
+// this doesn't need a composite (spotId + hidden) index.
 export async function getCommentsForSpot(spotId: string): Promise<Comment[]> {
-  const snap = await getDocs(query(commentsRef, where('spotId', '==', spotId)));
+  const snap = await getDocs(
+    query(commentsRef, where('spotId', '==', spotId), where('hidden', '==', false))
+  );
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }) as Comment)
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -41,14 +52,17 @@ export interface NewComment {
 // hidden is always set explicitly so later hidden-filtering never has to
 // treat a missing field as ambiguous.
 export async function createComment(input: NewComment): Promise<void> {
-  await addDoc(commentsRef, {
-    spotId: input.spotId,
-    authorName: input.authorName.trim(),
-    rating: input.rating,
-    text: input.text?.trim() || undefined,
-    hidden: false,
-    createdAt: Date.now(),
-  });
+  await addDoc(
+    commentsRef,
+    stripUndefined({
+      spotId: input.spotId,
+      authorName: input.authorName.trim(),
+      rating: input.rating,
+      text: input.text?.trim() || undefined,
+      hidden: false,
+      createdAt: Date.now(),
+    })
+  );
 }
 
 export async function getAllComments(): Promise<Comment[]> {
