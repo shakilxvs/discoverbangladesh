@@ -30,8 +30,22 @@ export async function getPublishedSpots(): Promise<Spot[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Spot);
 }
 
+// Public spot-detail lookup. This MUST filter by visibility == 'published'
+// in the query itself (not just afterward in JS) — Firestore security
+// rules for /spots only grant read access when `resource.data.visibility
+// == 'published'`, and for a *list/query* read (as opposed to a single-doc
+// get) Firestore can only allow the request if it can prove every possible
+// matching document satisfies the rule from the query's own filters. A
+// query filtered on slug alone can't prove that, so Firestore rejected the
+// whole request with a permission error — which is what was surfacing as
+// "This page couldn't load" / a 500 on every spot page. Matching the query
+// to the rule (as getPublishedSpots() already does) fixes it, and also
+// means a draft/hidden spot correctly 404s on the public site instead of
+// leaking through.
 export async function getSpotBySlug(slug: string): Promise<Spot | null> {
-  const snap = await getDocs(query(spotsRef, where('slug', '==', slug)));
+  const snap = await getDocs(
+    query(spotsRef, where('slug', '==', slug), where('visibility', '==', 'published'))
+  );
   const d = snap.docs[0];
   return d ? ({ id: d.id, ...d.data() } as Spot) : null;
 }
