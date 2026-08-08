@@ -7,8 +7,9 @@ import { CategorySubCategoryPicker } from './CategorySubCategoryPicker';
 import { KeywordsInput } from './KeywordsInput';
 import { GalleryImagesInput } from './GalleryImagesInput';
 import { DistrictSelect } from './DistrictSelect';
+import { Toggle } from './Toggle';
 import { createSpot, updateSpot, isSlugTaken, type SpotInput } from '@/lib/spots';
-import { slugify, cn } from '@/lib/utils';
+import { slugify } from '@/lib/utils';
 import type { Spot, SpotStatus, Visibility } from '@/types';
 
 const statusOptions: { value: SpotStatus; label: string }[] = [
@@ -54,39 +55,6 @@ function Field({
       {hint && <p className="mt-1 text-xs text-neutral-400">{hint}</p>}
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
-  );
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={cn(
-          'relative h-5 w-9 rounded-full transition-colors',
-          checked ? 'bg-river-600' : 'bg-neutral-200 dark:bg-neutral-700'
-        )}
-      >
-        <span
-          className={cn(
-            'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
-            checked ? 'translate-x-4' : 'translate-x-0.5'
-          )}
-        />
-      </button>
-      <span className="text-sm text-neutral-700 dark:text-neutral-300">{label}</span>
-    </label>
   );
 }
 
