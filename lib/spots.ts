@@ -10,7 +10,8 @@ import {
   orderBy,
   where,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, toFirestoreUpdate } from './firebase';
+import { stripUndefined } from './utils';
 import type { Spot } from '@/types';
 
 const spotsRef = collection(db, 'spots');
@@ -80,14 +81,18 @@ export async function isSlugTaken(slug: string, excludeId?: string): Promise<boo
 
 export type SpotInput = Omit<Spot, 'id' | 'createdAt' | 'updatedAt'>;
 
+// Optional fields (upazila/address/videoUrl, ...) come in from SpotForm as
+// `value.trim() || undefined` when left blank — same pattern, same
+// addDoc/updateDoc "Unsupported field value: undefined" crash as hero
+// slides (see lib/hero-slides.ts and lib/firebase.ts#toFirestoreUpdate).
 export async function createSpot(input: SpotInput): Promise<string> {
   const now = Date.now();
-  const ref = await addDoc(spotsRef, { ...input, createdAt: now, updatedAt: now });
+  const ref = await addDoc(spotsRef, stripUndefined({ ...input, createdAt: now, updatedAt: now }));
   return ref.id;
 }
 
 export async function updateSpot(id: string, input: SpotInput): Promise<void> {
-  await updateDoc(doc(db, 'spots', id), { ...input, updatedAt: Date.now() });
+  await updateDoc(doc(db, 'spots', id), toFirestoreUpdate({ ...input, updatedAt: Date.now() }));
 }
 
 export async function deleteSpot(id: string): Promise<void> {
