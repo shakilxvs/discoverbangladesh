@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { X, ImageIcon, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Toggle } from './Toggle';
 import type { HeroSlide } from '@/types';
 import type { HeroSlideInput } from '@/lib/hero-slides';
 
@@ -165,7 +166,7 @@ export function HeroSlideModal({ slide, onClose, onSave }: Props) {
                 htmlFor="slide-cta-url"
                 className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
               >
-                Button link
+                Button link <span className="text-neutral-400">(optional)</span>
               </label>
               <input
                 id="slide-cta-url"
@@ -177,28 +178,7 @@ export function HeroSlideModal({ slide, onClose, onSave }: Props) {
             </div>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-2">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={active}
-              onClick={() => setActive(!active)}
-              className={cn(
-                'relative h-5 w-9 rounded-full transition-colors',
-                active ? 'bg-river-600' : 'bg-neutral-200 dark:bg-neutral-700'
-              )}
-            >
-              <span
-                className={cn(
-                  'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform',
-                  active ? 'translate-x-4' : 'translate-x-0.5'
-                )}
-              />
-            </button>
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              Active (visible on the homepage)
-            </span>
-          </label>
+          <Toggle label="Active (visible on the homepage)" checked={active} onChange={setActive} />
 
           <div className="flex justify-end gap-2 pt-2">
             <button
