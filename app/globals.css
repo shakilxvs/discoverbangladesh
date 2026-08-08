@@ -9,18 +9,22 @@
   --font-sans: var(--font-inter), ui-sans-serif, sans-serif;
   --font-display: var(--font-manrope), ui-sans-serif, sans-serif;
 
-  /* River & monsoon blue — the site's primary palette */
-  --color-river-50: #eff6fa;
-  --color-river-100: #dcebf3;
-  --color-river-200: #b8d6e8;
-  --color-river-300: #8cbbd9;
-  --color-river-400: #5a9ac4;
-  --color-river-500: #3a7caa;
-  --color-river-600: #2a628c;
-  --color-river-700: #234f71;
-  --color-river-800: #1f425d;
-  --color-river-900: #1b384e;
-  --color-river-950: #10232f;
+  /* Primary palette — kept the "river-*" token names (they're used across
+     ~30 files) but the values are now Pinterest's red, so every button,
+     badge, link and accent site-wide picks this up automatically without
+     having to touch each component. --color-river-600 (#e60023) is
+     Pinterest's exact brand red. */
+  --color-river-50: #fdecec;
+  --color-river-100: #fbd0d0;
+  --color-river-200: #f7a8a8;
+  --color-river-300: #f27878;
+  --color-river-400: #ec4949;
+  --color-river-500: #e73535;
+  --color-river-600: #e60023;
+  --color-river-700: #c30014;
+  --color-river-800: #99000f;
+  --color-river-900: #730009;
+  --color-river-950: #400005;
 
   /* Monsoon gold — small accent use: ratings, featured badges, active tags */
   --color-monsoon-50: #fbf6e9;
@@ -40,5 +44,17 @@
   :focus-visible {
     outline: 2px solid var(--color-river-500);
     outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Keeps horizontally-scrollable strips (keyword pills, etc.) swipeable
+     without showing the OS scrollbar underneath them. */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Edge */
   }
 }
