@@ -31,6 +31,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Homepage banner slides. Public reads are scoped to active == true so
+    // the query the public site actually runs (where active == true)
+    // matches the rule exactly — same fix as /spots above. Admin reads
+    // everything (including inactive slides) for the management screen.
+    match /heroSlides/{slideId} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
     // Comments (which also carry the 1-5 star rating) are public to create —
     // "automatically approved, no moderation queue" per spec — but validated
     // on write, and only admin can hide/delete/lock.
