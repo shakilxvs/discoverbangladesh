@@ -13,7 +13,7 @@ function describeAuthError(err: unknown): string {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
     case 'auth/user-not-found':
-      return 'Email or password is incorrect, or that user doesn\'t exist yet in Firebase Authentication → Users.';
+      return 'Email or password is incorrect, or that user doesn\'t exist yet in the System.';
     case 'auth/popup-closed-by-user':
       return 'Google sign-in was closed before finishing — try again.';
     case 'auth/popup-blocked':
