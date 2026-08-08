@@ -9,7 +9,7 @@ export function RelatedSpots({ spots }: { spots: Spot[] }) {
       <h2 className="mb-4 font-display text-lg font-semibold text-neutral-900 dark:text-white">
         Related spots
       </h2>
-      <div className="columns-2 gap-4 sm:columns-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {spots.map((spot) => (
           <SpotCard key={spot.id} spot={spot} />
         ))}
