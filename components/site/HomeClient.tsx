@@ -71,7 +71,7 @@ export function HomeClient({
             Nothing matches yet — try a different search or filter.
           </div>
         ) : (
-          <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {results.map((spot) => (
               <SpotCard key={spot.id} spot={spot} />
             ))}
@@ -121,7 +121,7 @@ export function HomeClient({
               <h2 className="mb-4 font-display text-xl font-semibold text-neutral-900 dark:text-white">
                 Featured Places
               </h2>
-              <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {featured.map((spot) => (
                   <SpotCard key={spot.id} spot={spot} />
                 ))}
@@ -134,7 +134,7 @@ export function HomeClient({
               <h2 className="mb-4 font-display text-xl font-semibold text-neutral-900 dark:text-white">
                 Newest Places
               </h2>
-              <div className="columns-2 gap-4 sm:columns-3 lg:columns-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {newest.map((spot) => (
                   <SpotCard key={spot.id} spot={spot} />
                 ))}
