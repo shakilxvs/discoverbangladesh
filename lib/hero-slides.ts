@@ -10,7 +10,8 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, toFirestoreUpdate } from './firebase';
+import { stripUndefined } from './utils';
 import type { HeroSlide } from '@/types';
 
 const heroSlidesRef = collection(db, 'heroSlides');
@@ -36,18 +37,28 @@ export async function getActiveHeroSlides(): Promise<HeroSlide[]> {
 
 export type HeroSlideInput = Omit<HeroSlide, 'id' | 'order' | 'createdAt'>;
 
+// The modal builds optional fields (subtitle/ctaLabel/ctaUrl) as
+// `value.trim() || undefined` so a blank field really is omitted. But
+// Firestore's addDoc/updateDoc throw on any `undefined` field value, so
+// leaving those "optional" fields blank was throwing on every save and
+// getting swallowed into the generic "Something went wrong saving that
+// slide" toast — only filling every field in "worked" because none of them
+// were undefined. stripUndefined() drops those keys instead of sending them.
 export async function createHeroSlide(input: HeroSlideInput): Promise<string> {
   const existing = await getHeroSlides();
-  const ref = await addDoc(heroSlidesRef, {
-    ...input,
-    order: existing.length,
-    createdAt: Date.now(),
-  });
+  const ref = await addDoc(
+    heroSlidesRef,
+    stripUndefined({
+      ...input,
+      order: existing.length,
+      createdAt: Date.now(),
+    })
+  );
   return ref.id;
 }
 
 export async function updateHeroSlide(id: string, input: HeroSlideInput): Promise<void> {
-  await updateDoc(doc(db, 'heroSlides', id), { ...input });
+  await updateDoc(doc(db, 'heroSlides', id), toFirestoreUpdate({ ...input }));
 }
 
 export async function deleteHeroSlide(id: string): Promise<void> {
