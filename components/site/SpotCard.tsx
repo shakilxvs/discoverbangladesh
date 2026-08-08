@@ -12,7 +12,7 @@ export function SpotCard({ spot }: { spot: Spot }) {
   return (
     <Link
       href={`/spot/${spot.slug}`}
-      className="group mb-4 block break-inside-avoid overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+      className="group block overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
     >
       <div className="relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
         {hasImage ? (
