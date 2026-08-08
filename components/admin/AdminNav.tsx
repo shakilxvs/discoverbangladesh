@@ -2,13 +2,23 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, MapPin, Tags, Layers, MapPinned, MessageSquare, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  MapPin,
+  Tags,
+  Layers,
+  MapPinned,
+  MessageSquare,
+  GalleryHorizontal,
+  LogOut,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const items = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, soon: false },
   { href: '/admin/spots', label: 'Spots', icon: MapPin, soon: false },
+  { href: '/admin/hero-slides', label: 'Hero Slides', icon: GalleryHorizontal, soon: false },
   { href: '/admin/categories', label: 'Categories', icon: Tags, soon: false },
   { href: '/admin/sub-categories', label: 'Sub-Categories', icon: Layers, soon: false },
   { href: '/admin/districts', label: 'Districts', icon: MapPinned, soon: false },
