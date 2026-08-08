@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseVideoUrl } from '@/lib/video';
@@ -71,8 +71,40 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const slide = slides[index];
   const goTo = (i: number) => setIndex((i + count) % count);
 
+  // Touch-swipe support (mobile only — desktop browsers don't fire touch
+  // events, so this never interferes with the mouse-hover arrow controls).
+  const touchStartX = useRef<number | null>(null);
+  const touchDeltaX = useRef(0);
+  const SWIPE_THRESHOLD = 40;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchDeltaX.current = 0;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+  };
+
+  const onTouchEnd = () => {
+    if (touchStartX.current === null) return;
+    if (touchDeltaX.current > SWIPE_THRESHOLD) {
+      goTo(index - 1);
+    } else if (touchDeltaX.current < -SWIPE_THRESHOLD) {
+      goTo(index + 1);
+    }
+    touchStartX.current = null;
+    touchDeltaX.current = 0;
+  };
+
   return (
-    <div className="group relative mb-8 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-neutral-900">
+    <div
+      className="group relative mb-8 aspect-[16/9] w-full touch-pan-y overflow-hidden rounded-2xl bg-neutral-900"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {slides.map((s, i) => (
         <div
           key={s.id}
