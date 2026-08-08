@@ -7,16 +7,19 @@ import * as Icons from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { KeywordPills } from './KeywordPills';
 import { SpotCard } from './SpotCard';
-import type { Category, SubCategory, Spot } from '@/types';
+import { HeroSlider } from './HeroSlider';
+import type { Category, SubCategory, Spot, HeroSlide } from '@/types';
 
 export function HomeClient({
   spots,
   categories,
   subCategories,
+  heroSlides,
 }: {
   spots: Spot[];
   categories: Category[];
   subCategories: SubCategory[];
+  heroSlides: HeroSlide[];
 }) {
   const [search, setSearch] = useState('');
   const [activePill, setActivePill] = useState<string | null>(null);
@@ -42,14 +45,18 @@ export function HomeClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 max-w-2xl">
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-4xl">
-          Discover interesting places across Bangladesh
-        </h1>
-        <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-          Waterfalls, tea estates, heritage sites, hidden gems and more.
-        </p>
-      </div>
+      {heroSlides.length > 0 ? (
+        <HeroSlider slides={heroSlides} />
+      ) : (
+        <div className="mb-8 max-w-2xl">
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white sm:text-4xl">
+            Discover interesting places across Bangladesh
+          </h1>
+          <p className="mt-2 text-neutral-500 dark:text-neutral-400">
+            Waterfalls, tea estates, heritage sites, hidden gems and more.
+          </p>
+        </div>
+      )}
 
       <div className="mb-4">
         <SearchBar value={search} onChange={setSearch} />
