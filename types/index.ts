@@ -33,6 +33,26 @@ export interface SubCategory {
   createdAt: number;
 }
 
+// The homepage banner. Admin-managed list of slides — each is either an
+// image or a video, shown at a 16:9 aspect ratio with the title/subtitle
+// overlaid bottom-left. `order` controls slide sequence; `active` lets an
+// admin hide a slide without deleting it.
+export interface HeroSlide {
+  id: string;
+  type: 'image' | 'video';
+  // Image URL for type 'image'. For type 'video': a YouTube/Vimeo link or
+  // a direct .mp4/.webm URL — same as Spot.videoUrl, parsed with
+  // lib/video's parseVideoUrl.
+  mediaUrl: string;
+  title: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  order: number;
+  active: boolean;
+  createdAt: number;
+}
+
 export interface District {
   id: string;
   name: string;
