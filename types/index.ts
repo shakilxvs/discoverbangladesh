@@ -16,8 +16,47 @@ export interface Category {
   name: string;
   slug: string;
   icon: string;
+  // Optional low-opacity background image for the category card. URL-based
+  // (no Storage) — existing categories without this field fall back to the
+  // plain card design exactly as before.
+  imageUrl?: string;
   order: number;
   createdAt: number;
+}
+
+// --- Roles & admin user management -----------------------------------
+// master_admin is never stored as a Firestore role — it is derived purely
+// from the account's email matching MASTER_ADMIN_EMAIL (see lib/roles.ts).
+// Only 'admin' and 'moderator' accounts live in the users/{uid} collection.
+export type Role = 'master_admin' | 'admin' | 'moderator';
+
+export interface UserProfile {
+  uid: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'moderator';
+  status: 'active' | 'disabled';
+  createdAt: number;
+}
+
+// --- Site-wide settings (settings/{docId}) -----------------------------
+export interface SiteIdentitySettings {
+  logoText: string;
+  logoImageUrl: string;
+}
+
+export interface AboutSettings {
+  bangladeshImageUrl: string;
+  bangladeshTitle: string;
+  bangladeshContent: string;
+  creatorImageUrl: string;
+  creatorTitle: string;
+  creatorContent: string;
+}
+
+export interface PrivacySettings {
+  title: string;
+  content: string;
 }
 
 // Many-to-many with Category, stored on the sub-category side as an array
