@@ -4,25 +4,43 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Fuse from 'fuse.js';
 import * as Icons from 'lucide-react';
+import { MapPin, LandPlot } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { KeywordPills } from './KeywordPills';
 import { SpotCard } from './SpotCard';
 import { HeroSlider } from './HeroSlider';
-import type { Category, SubCategory, Spot, HeroSlide } from '@/types';
+import { BANGLADESH_DIVISIONS } from '@/lib/districts';
+import { cn } from '@/lib/utils';
+import type { Category, SubCategory, Spot, HeroSlide, District } from '@/types';
+
+type BrowseMode = 'category' | 'division' | 'district';
+
+const browseModes: { id: BrowseMode; label: string }[] = [
+  { id: 'division', label: 'Division' },
+  { id: 'district', label: 'District' },
+  { id: 'category', label: 'Category' },
+];
 
 export function HomeClient({
   spots,
   categories,
   subCategories,
+  districts,
   heroSlides,
 }: {
   spots: Spot[];
   categories: Category[];
   subCategories: SubCategory[];
+  districts: District[];
   heroSlides: HeroSlide[];
 }) {
   const [search, setSearch] = useState('');
   const [activePill, setActivePill] = useState<string | null>(null);
+  // Category stays the default browse mode — the initial homepage state
+  // behaves exactly as before. Division/District are additive.
+  const [browseMode, setBrowseMode] = useState<BrowseMode>('category');
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
 
   const fuse = useMemo(
     () => new Fuse(spots, { keys: ['name', 'district', 'division', 'keywords'], threshold: 0.3 }),
@@ -42,6 +60,24 @@ export function HomeClient({
     () => [...spots].sort((a, b) => b.createdAt - a.createdAt).slice(0, 8),
     [spots]
   );
+
+  const divisionSpots = useMemo(
+    () => (selectedDivision ? spots.filter((s) => s.division === selectedDivision) : []),
+    [spots, selectedDivision]
+  );
+  const districtSpots = useMemo(
+    () => (selectedDistrict ? spots.filter((s) => s.district === selectedDistrict) : []),
+    [spots, selectedDistrict]
+  );
+
+  function handleBrowseModeChange(mode: BrowseMode) {
+    setBrowseMode(mode);
+    setSelectedDivision(null);
+    setSelectedDistrict(null);
+  }
+
+  const browseSectionTitle =
+    browseMode === 'division' ? 'Divisions' : browseMode === 'district' ? 'Districts' : 'Categories';
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pt-5 lg:px-8">
@@ -80,40 +116,163 @@ export function HomeClient({
       ) : (
         <div className="space-y-12">
           <section>
-            <h2 className="mb-4 font-display text-xl font-semibold text-neutral-900 dark:text-white">
-              Categories
-            </h2>
-            {categories.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-neutral-500 dark:border-neutral-700">
-                No categories yet — run{' '}
-                <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm dark:bg-neutral-800">
-                  npm run seed
-                </code>
-                .
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-xl font-semibold text-neutral-900 dark:text-white">
+                {browseSectionTitle}
+              </h2>
+              {/* Division / District / Category — Category is active by
+                  default so the page's initial state is unchanged. */}
+              <div className="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-white p-1 dark:border-neutral-800 dark:bg-neutral-900">
+                {browseModes.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleBrowseModeChange(id)}
+                    aria-pressed={browseMode === id}
+                    className={cn(
+                      'rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+                      browseMode === id
+                        ? 'bg-river-600 text-white'
+                        : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {categories.map((category) => {
-                  const Icon =
-                    (Icons[category.icon as keyof typeof Icons] as Icons.LucideIcon) ??
-                    Icons.MapPin;
-                  return (
-                    <Link
-                      key={category.id}
-                      href={`/category/${category.slug}`}
-                      className="group flex flex-col items-start gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+            </div>
+
+            {browseMode === 'category' &&
+              (categories.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-neutral-500 dark:border-neutral-700">
+                  No categories yet — run{' '}
+                  <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-sm dark:bg-neutral-800">
+                    npm run seed
+                  </code>
+                  .
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {categories.map((category) => {
+                    const Icon =
+                      (Icons[category.icon as keyof typeof Icons] as Icons.LucideIcon) ??
+                      Icons.MapPin;
+                    return (
+                      <Link
+                        key={category.id}
+                        href={`/category/${category.slug}`}
+                        className="group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+                      >
+                        {category.imageUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={category.imageUrl}
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-10 dark:opacity-15"
+                          />
+                        )}
+                        <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-river-50 text-river-600 dark:bg-river-950 dark:text-river-400">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="relative font-medium text-neutral-900 dark:text-white">
+                          {category.name}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
+
+            {browseMode === 'division' &&
+              (!selectedDivision ? (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                  {BANGLADESH_DIVISIONS.map((division) => (
+                    <button
+                      key={division}
+                      type="button"
+                      onClick={() => setSelectedDivision(division)}
+                      className="flex flex-col items-start gap-3 rounded-2xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
                     >
                       <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-river-50 text-river-600 dark:bg-river-950 dark:text-river-400">
-                        <Icon className="h-5 w-5" />
+                        <LandPlot className="h-5 w-5" />
                       </span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
-                        {category.name}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+                      <span className="font-medium text-neutral-900 dark:text-white">{division}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDivision(null)}
+                    className="mb-4 text-sm font-medium text-river-600 hover:underline dark:text-river-400"
+                  >
+                    ← All divisions
+                  </button>
+                  {divisionSpots.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-neutral-300 p-10 text-center text-neutral-500 dark:border-neutral-700">
+                      No published spots in {selectedDivision} yet.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                      {divisionSpots.map((spot) => (
+                        <SpotCard key={spot.id} spot={spot} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+            {browseMode === 'district' &&
+              (!selectedDistrict ? (
+                districts.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-neutral-500 dark:border-neutral-700">
+                    No districts yet.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                    {districts.map((district) => (
+                      <button
+                        key={district.id}
+                        type="button"
+                        onClick={() => setSelectedDistrict(district.name)}
+                        className="flex flex-col items-start gap-3 rounded-2xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+                      >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-river-50 text-river-600 dark:bg-river-950 dark:text-river-400">
+                          <MapPin className="h-5 w-5" />
+                        </span>
+                        <span className="font-medium text-neutral-900 dark:text-white">
+                          {district.name}
+                        </span>
+                        <span className="text-xs text-neutral-400">{district.division}</span>
+                      </button>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDistrict(null)}
+                    className="mb-4 text-sm font-medium text-river-600 hover:underline dark:text-river-400"
+                  >
+                    ← All districts
+                  </button>
+                  {districtSpots.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-neutral-300 p-10 text-center text-neutral-500 dark:border-neutral-700">
+                      No published spots in {selectedDistrict} yet.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                      {districtSpots.map((spot) => (
+                        <SpotCard key={spot.id} spot={spot} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
           </section>
 
           {featured.length > 0 && (
