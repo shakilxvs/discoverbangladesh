@@ -13,6 +13,9 @@ import { ShareButton } from '@/components/site/ShareButton';
 import { CommentsSection } from '@/components/site/CommentsSection';
 import { RelatedSpots } from '@/components/site/RelatedSpots';
 import { StarRatingDisplay } from '@/components/site/StarRating';
+import { Breadcrumbs, breadcrumbJsonLd } from '@/components/site/Breadcrumbs';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://discoverbangladesh.vercel.app';
 
 // See app/(site)/page.tsx for why this is needed.
 export const dynamic = 'force-dynamic';
@@ -35,12 +38,23 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { slug } = await params;
   const spot = await getSpotBySlug(slug);
   if (!spot) return {};
+  const title = `${spot.name} — Travel Guide`;
+  const description = spot.description.slice(0, 160);
   return {
-    title: spot.name,
-    description: spot.description.slice(0, 160),
+    title,
+    description,
+    alternates: { canonical: `/spot/${spot.slug}` },
     openGraph: {
-      title: spot.name,
-      description: spot.description.slice(0, 160),
+      title,
+      description,
+      type: 'article',
+      url: `${SITE_URL}/spot/${spot.slug}`,
+      images: spot.featuredImage ? [spot.featuredImage] : undefined,
+    },
+    twitter: {
+      card: spot.featuredImage ? 'summary_large_image' : 'summary',
+      title,
+      description,
       images: spot.featuredImage ? [spot.featuredImage] : undefined,
     },
   };
@@ -63,9 +77,54 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
   const spotSubCategories = subCategories.filter((s) => spot.subCategoryIds.includes(s.id));
   const rating = summarizeRating(comments);
   const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/spot/${spot.slug}`;
+  const primaryCategory = spotCategories[0];
+  const imageAlt = `${spot.name} in ${spot.district}, ${spot.division}, Bangladesh`;
+
+  const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    ...(primaryCategory ? [{ label: primaryCategory.name, href: `/category/${primaryCategory.slug}` }] : []),
+    { label: spot.division },
+    { label: spot.district },
+    { label: spot.name },
+  ];
+
+  const touristAttractionJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristAttraction',
+    name: spot.name,
+    description: spot.description || undefined,
+    image: spot.featuredImage || undefined,
+    url: canonicalUrl,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: spot.district,
+      addressRegion: spot.division,
+      addressCountry: 'BD',
+    },
+    // Only included when there's real comment/rating data behind it — no
+    // invented ratings, reviews, prices, or coordinates.
+    ...(rating.count > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: rating.average,
+            reviewCount: rating.count,
+          },
+        }
+      : {}),
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(touristAttractionJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems, SITE_URL)) }}
+      />
+      <Breadcrumbs items={breadcrumbItems} />
       <div className="mb-6">
         <div className="mb-3 flex flex-wrap items-center gap-1.5 text-sm text-neutral-400">
           <MapPin className="h-4 w-4" />
@@ -97,7 +156,7 @@ export default async function SpotDetailPage({ params }: { params: Params }) {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={spot.featuredImage}
-          alt={spot.name}
+          alt={imageAlt}
           className="mb-6 aspect-[16/9] w-full rounded-2xl object-cover"
         />
       ) : (
