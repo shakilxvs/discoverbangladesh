@@ -8,19 +8,20 @@ import type { Category } from '@/types';
 interface Props {
   category: Category | null;
   onClose: () => void;
-  onSave: (input: { name: string; icon: string }) => void;
+  onSave: (input: { name: string; icon: string; imageUrl?: string }) => void;
 }
 
 export function CategoryModal({ category, onClose, onSave }: Props) {
   const [name, setName] = useState(category?.name ?? '');
   const [icon, setIcon] = useState(category?.icon ?? 'MapPin');
+  const [imageUrl, setImageUrl] = useState(category?.imageUrl ?? '');
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
-    await onSave({ name: name.trim(), icon });
+    await onSave({ name: name.trim(), icon, imageUrl: imageUrl.trim() || undefined });
     setSaving(false);
   }
 
@@ -63,6 +64,26 @@ export function CategoryModal({ category, onClose, onSave }: Props) {
               Icon
             </label>
             <IconPicker value={icon} onChange={setIcon} />
+          </div>
+
+          <div>
+            <label
+              htmlFor="category-image"
+              className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Background image URL (optional)
+            </label>
+            <input
+              id="category-image"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/nature.jpg"
+              className="w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-river-500 focus:ring-2 focus:ring-river-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:ring-river-900"
+            />
+            <p className="mt-1.5 text-xs text-neutral-400">
+              Shown as a subtle, low-opacity background on the category card. Leave blank for the
+              plain card.
+            </p>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
