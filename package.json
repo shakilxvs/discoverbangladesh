@@ -8,8 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "seed": "tsx scripts/seed.ts",
-    "postbuild": "next-sitemap"
+    "seed": "tsx scripts/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +20,7 @@
     "@hookform/resolvers": "^5.4.0",
     "clsx": "^2.1.1",
     "firebase": "^12.16.0",
+    "firebase-admin": "^13.5.0",
     "framer-motion": "^12.42.2",
     "fuse.js": "^7.5.0",
     "lucide-react": "^1.25.0",
