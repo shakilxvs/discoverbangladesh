@@ -3,21 +3,56 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Single-admin gate for now (NEXT_PUBLIC_ADMIN_EMAIL). Works for both
-    // sign-in methods: password auth already requires knowing the password,
-    // and Google auth already requires owning that Google account, so no
-    // extra verification checks are layered on top here.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Master Admin is a permanent, un-demotable safety net tied to one
+    // email — it is intentionally NOT backed by a Firestore document, so
+    // there is nothing here that could be edited/deleted to lock the
+    // account out or let anyone else claim the role. Keep this literal in
+    // sync with MASTER_ADMIN_EMAIL in lib/roles.ts (rules files can't
+    // import app code).
+    function isMasterAdmin() {
+      return isSignedIn() && request.auth.token.email == 'shakilxvs@gmail.com';
+    }
+
+    // Admin/Moderator roles come from users/{uid}.role, which works
+    // identically whether that doc was created through the admin panel's
+    // "Add User" flow or typed by hand into the Firebase console — this is
+    // the ONLY place role is read from for those two roles.
+    function hasRole(role) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+    }
+
+    // Admin: Master Admin OR a users/{uid} doc with role == 'admin'.
+    // Full site-management access, everything except User Management.
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'shakilxvs@gmail.com';
+      return isMasterAdmin() || hasRole('admin');
+    }
+
+    // Moderator: Spots + Comments only.
+    function isModerator() {
+      return hasRole('moderator');
+    }
+
+    // Any signed-in staff account (Master Admin, Admin, or Moderator) —
+    // used for the two sections a Moderator can also reach.
+    function isStaff() {
+      return isAdmin() || isModerator();
     }
 
     match /spots/{spotId} {
-      allow read: if resource.data.visibility == 'published' || isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow read: if resource.data.visibility == 'published' || isStaff();
+      allow create, update, delete: if isStaff();
     }
 
     match /categories/{categoryId} {
       allow read: if true;
+      // Moderators can't manage categories — Admin/Master Admin only.
       allow write: if isAdmin();
     }
 
@@ -31,20 +66,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Homepage banner slides. Public reads are scoped to active == true so
-    // the query the public site actually runs (where active == true)
-    // matches the rule exactly — same fix as /spots above. Admin reads
-    // everything (including inactive slides) for the management screen.
     match /heroSlides/{slideId} {
       allow read: if resource.data.active == true || isAdmin();
       allow write: if isAdmin();
     }
 
-    // Comments (which also carry the 1-5 star rating) are public to create —
-    // "automatically approved, no moderation queue" per spec — but validated
-    // on write, and only admin can hide/delete/lock.
+    // Comments are public to create (auto-approved, no moderation queue),
+    // but hide/delete/lock needs Spots+Comments access, so Moderators can
+    // do it too, not just Admin.
     match /comments/{commentId} {
-      allow read: if resource.data.hidden != true || isAdmin();
+      allow read: if resource.data.hidden != true || isStaff();
       allow create: if request.resource.data.spotId is string
         && request.resource.data.authorName is string
         && request.resource.data.authorName.size() > 0
@@ -54,7 +85,25 @@ service cloud.firestore {
         && request.resource.data.rating <= 5
         && (!('text' in request.resource.data) || request.resource.data.text.size() < 2000)
         && (!('hidden' in request.resource.data) || request.resource.data.hidden == false);
-      allow update, delete: if isAdmin();
+      allow update, delete: if isStaff();
+    }
+
+    // Site-wide settings: Site Identity (logo), About page content, and
+    // Privacy Policy content. Publicly readable (the public site renders
+    // them), writable by Admin/Master Admin only — not Moderator.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin/Moderator account profiles. A signed-in user may always read
+    // their OWN doc (that's how the app resolves its own role on login) —
+    // everything else (listing all users, creating, editing roles/status,
+    // deleting) is Master Admin only. Regular site visitors have no access.
+    match /users/{uid} {
+      allow get: if isSignedIn() && (request.auth.uid == uid || isMasterAdmin());
+      allow list: if isMasterAdmin();
+      allow create, update, delete: if isMasterAdmin();
     }
   }
 }
