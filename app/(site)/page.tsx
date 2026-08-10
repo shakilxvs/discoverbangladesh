@@ -2,6 +2,7 @@ import { getPublishedSpots } from '@/lib/spots';
 import { getCategories } from '@/lib/categories';
 import { getSubCategories } from '@/lib/sub-categories';
 import { getActiveHeroSlides } from '@/lib/hero-slides';
+import { getDistricts } from '@/lib/districts';
 import { HomeClient } from '@/components/site/HomeClient';
 
 // Without this, Next.js statically generates this page once at build time
@@ -12,11 +13,12 @@ import { HomeClient } from '@/components/site/HomeClient';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [spots, categories, subCategories, heroSlides] = await Promise.all([
+  const [spots, categories, subCategories, heroSlides, districts] = await Promise.all([
     getPublishedSpots(),
     getCategories(),
     getSubCategories(),
     getActiveHeroSlides(),
+    getDistricts(),
   ]);
 
   return (
@@ -25,6 +27,7 @@ export default async function HomePage() {
       categories={categories}
       subCategories={subCategories}
       heroSlides={heroSlides}
+      districts={districts}
     />
   );
 }
