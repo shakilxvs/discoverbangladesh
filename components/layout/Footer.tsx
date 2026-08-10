@@ -29,6 +29,12 @@ export function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-10 text-sm text-neutral-500 dark:text-neutral-400 sm:flex-row sm:justify-between sm:px-6 lg:px-8">
         <p>&copy; {year} DiscoverBangladesh</p>
         <div className="flex items-center gap-4">
+          <Link
+            href="/privacy"
+            className="text-neutral-500 hover:text-river-600 dark:text-neutral-400 dark:hover:text-river-400"
+          >
+            Privacy Policy
+          </Link>
           <span>
             by{' '}
             <Link
