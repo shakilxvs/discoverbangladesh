@@ -119,7 +119,7 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleSave(input: { name: string; icon: string }) {
+  async function handleSave(input: { name: string; icon: string; imageUrl?: string }) {
     try {
       if (editing) {
         await updateCategory(editing.id, input);
