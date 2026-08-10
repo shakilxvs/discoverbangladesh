@@ -5,6 +5,9 @@ import { getCategories } from '@/lib/categories';
 import { getSubCategories, filterSubCategoriesByCategories } from '@/lib/sub-categories';
 import { getPublishedSpots } from '@/lib/spots';
 import { SpotCard } from '@/components/site/SpotCard';
+import { Breadcrumbs, breadcrumbJsonLd } from '@/components/site/Breadcrumbs';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://discoverbangladesh.vercel.app';
 
 // See app/(site)/page.tsx for why this is needed — without it this page
 // is frozen at build time and never reflects data added afterward.
@@ -16,7 +19,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { slug } = await params;
   const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
-  return category ? { title: category.name } : {};
+  if (!category) return {};
+  const title = `${category.name} — Bangladesh Travel Spots`;
+  const description = `Browse ${category.name.toLowerCase()} places to visit across Bangladesh on DiscoverBangladesh.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/category/${category.slug}` },
+    openGraph: { title, description, url: `${SITE_URL}/category/${category.slug}` },
+  };
 }
 
 export default async function CategoryPage({ params }: { params: Params }) {
@@ -33,8 +44,15 @@ export default async function CategoryPage({ params }: { params: Params }) {
   const relevantSubCategories = filterSubCategoriesByCategories(subCategories, [category.id]);
   const categorySpots = spots.filter((s) => s.categoryIds.includes(category.id));
 
+  const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: category.name }];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems, SITE_URL)) }}
+      />
+      <Breadcrumbs items={breadcrumbItems} />
       <h1 className="mb-2 font-display text-3xl font-semibold text-neutral-900 dark:text-white">
         {category.name}
       </h1>
