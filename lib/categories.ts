@@ -9,8 +9,8 @@ import {
   orderBy,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from './firebase';
-import { slugify } from './utils';
+import { db, toFirestoreUpdate } from './firebase';
+import { slugify, stripUndefined } from './utils';
 import type { Category } from '@/types';
 
 const categoriesRef = collection(db, 'categories');
@@ -20,27 +20,39 @@ export async function getCategories(): Promise<Category[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Category);
 }
 
-export async function createCategory(input: { name: string; icon: string }): Promise<string> {
+export async function createCategory(input: {
+  name: string;
+  icon: string;
+  imageUrl?: string;
+}): Promise<string> {
   const existing = await getCategories();
-  const ref = await addDoc(categoriesRef, {
-    name: input.name,
-    slug: slugify(input.name),
-    icon: input.icon,
-    order: existing.length,
-    createdAt: Date.now(),
-  });
+  const ref = await addDoc(
+    categoriesRef,
+    stripUndefined({
+      name: input.name,
+      slug: slugify(input.name),
+      icon: input.icon,
+      imageUrl: input.imageUrl || undefined,
+      order: existing.length,
+      createdAt: Date.now(),
+    })
+  );
   return ref.id;
 }
 
 export async function updateCategory(
   id: string,
-  input: { name: string; icon: string }
+  input: { name: string; icon: string; imageUrl?: string }
 ): Promise<void> {
-  await updateDoc(doc(db, 'categories', id), {
-    name: input.name,
-    slug: slugify(input.name),
-    icon: input.icon,
-  });
+  await updateDoc(
+    doc(db, 'categories', id),
+    toFirestoreUpdate({
+      name: input.name,
+      slug: slugify(input.name),
+      icon: input.icon,
+      imageUrl: input.imageUrl || undefined,
+    })
+  );
 }
 
 // Deleting a category shouldn't leave dangling categoryIds behind on
