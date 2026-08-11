@@ -33,7 +33,7 @@ export function Footer() {
             href="/privacy"
             className="text-neutral-500 hover:text-river-600 dark:text-neutral-400 dark:hover:text-river-400"
           >
-            Privacy Policy
+            Privacy & Safety
           </Link>
           <span>
             by{' '}
