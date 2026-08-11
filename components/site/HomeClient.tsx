@@ -79,6 +79,14 @@ export function HomeClient({
   const browseSectionTitle =
     browseMode === 'division' ? 'Divisions' : browseMode === 'district' ? 'Districts' : 'Categories';
 
+  // Once a specific Division or District is drilled into, that spot grid
+  // IS the page's focus — showing the unrelated global Featured/Newest
+  // sections underneath it is what was distracting visitors. Category
+  // browsing doesn't have this problem because picking a category
+  // navigates to its own /category/[slug] page entirely, which never
+  // renders these sections either.
+  const showGlobalSections = !selectedDivision && !selectedDistrict;
+
   return (
     <div className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pt-5 lg:px-8">
       {heroSlides.length > 0 ? (
@@ -164,14 +172,24 @@ export function HomeClient({
                         className="group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
                       >
                         {category.imageUrl && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={category.imageUrl}
-                            alt=""
-                            aria-hidden="true"
-                            loading="lazy"
-                            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-10 dark:opacity-15"
-                          />
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={category.imageUrl}
+                              alt=""
+                              aria-hidden="true"
+                              loading="lazy"
+                              className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-300 group-hover:opacity-55 dark:opacity-45 dark:group-hover:opacity-60"
+                            />
+                            {/* Scrim so the icon/label stay readable regardless
+                                of how bright the underlying photo is — needed
+                                now that the image itself is visible enough to
+                                actually read as a background, not just a hint. */}
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white via-white/60 to-white/10 dark:from-neutral-900 dark:via-neutral-900/70 dark:to-neutral-900/20"
+                            />
+                          </>
                         )}
                         <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-river-50 text-river-600 dark:bg-river-950 dark:text-river-400">
                           <Icon className="h-5 w-5" />
@@ -275,7 +293,7 @@ export function HomeClient({
               ))}
           </section>
 
-          {featured.length > 0 && (
+          {showGlobalSections && featured.length > 0 && (
             <section>
               <h2 className="mb-4 font-display text-xl font-semibold text-neutral-900 dark:text-white">
                 Featured Places
@@ -288,7 +306,7 @@ export function HomeClient({
             </section>
           )}
 
-          {newest.length > 0 && (
+          {showGlobalSections && newest.length > 0 && (
             <section>
               <h2 className="mb-4 font-display text-xl font-semibold text-neutral-900 dark:text-white">
                 Newest Places
@@ -301,7 +319,7 @@ export function HomeClient({
             </section>
           )}
 
-          {spots.length === 0 && categories.length > 0 && (
+          {showGlobalSections && spots.length === 0 && categories.length > 0 && (
             <div className="rounded-2xl border border-dashed border-neutral-300 p-8 text-center text-neutral-500 dark:border-neutral-700">
               No published spots yet — add and publish some from the admin panel.
             </div>
