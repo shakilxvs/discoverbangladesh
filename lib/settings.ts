@@ -15,13 +15,12 @@ const DEFAULT_ABOUT: AboutSettings = {
   bangladeshImageUrl: '',
   bangladeshTitle: 'About Bangladesh',
   bangladeshContent: '',
-  creatorImageUrl: '',
-  creatorTitle: 'About the Creator',
-  creatorContent: '',
+  teamTitle: 'Meet the Team',
+  team: [],
 };
 
 const DEFAULT_PRIVACY: PrivacySettings = {
-  title: 'Privacy Policy',
+  title: 'Privacy & Safety',
   content: '',
 };
 
@@ -36,9 +35,40 @@ export async function saveSiteIdentity(input: SiteIdentitySettings): Promise<voi
   await setDoc(doc(db, 'settings', 'site'), input, { merge: true });
 }
 
+// Old shape, from before the Team section existed — kept only so
+// getAboutSettings can migrate it below without losing anything an admin
+// already typed in.
+interface LegacyAboutFields {
+  creatorImageUrl?: string;
+  creatorTitle?: string;
+  creatorContent?: string;
+}
+
 export async function getAboutSettings(): Promise<AboutSettings> {
   const snap = await getDoc(doc(db, 'settings', 'about'));
-  return snap.exists() ? { ...DEFAULT_ABOUT, ...(snap.data() as Partial<AboutSettings>) } : DEFAULT_ABOUT;
+  if (!snap.exists()) return DEFAULT_ABOUT;
+
+  const data = snap.data() as Partial<AboutSettings> & LegacyAboutFields;
+  const merged: AboutSettings = { ...DEFAULT_ABOUT, ...data, team: data.team ?? [] };
+
+  // Migrate the old single "About the Creator" fields into one team
+  // member so nothing already saved is silently lost. This only happens
+  // in memory here — it's written back to Firestore under the new shape
+  // the next time an admin opens and saves the About page.
+  if (merged.team.length === 0 && (data.creatorTitle || data.creatorContent || data.creatorImageUrl)) {
+    merged.team = [
+      {
+        id: 'legacy-creator',
+        avatarUrl: data.creatorImageUrl ?? '',
+        name: data.creatorTitle ?? '',
+        title: '',
+        bio: data.creatorContent ?? '',
+        socialUrls: [],
+      },
+    ];
+  }
+
+  return merged;
 }
 
 export async function saveAboutSettings(input: AboutSettings): Promise<void> {
