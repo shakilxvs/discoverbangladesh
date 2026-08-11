@@ -49,9 +49,23 @@ export interface AboutSettings {
   bangladeshImageUrl: string;
   bangladeshTitle: string;
   bangladeshContent: string;
-  creatorImageUrl: string;
-  creatorTitle: string;
-  creatorContent: string;
+  // Replaces the old single "About the Creator" block with a full team
+  // roster. teamTitle is the section heading (defaults to "Meet the
+  // Team"); each member has their own avatar/name/title/bio/social links.
+  teamTitle: string;
+  team: TeamMember[];
+}
+
+export interface TeamMember {
+  id: string;
+  avatarUrl: string;
+  name: string;
+  title: string;
+  bio: string;
+  // Just URLs — the icon shown next to each is auto-detected from the URL
+  // (see components/site/SocialIcon.tsx), no separate platform field to
+  // keep in sync.
+  socialUrls: string[];
 }
 
 export interface PrivacySettings {
