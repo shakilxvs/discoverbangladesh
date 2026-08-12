@@ -109,14 +109,7 @@ export default async function AboutPage() {
                 {member.socialUrls.filter(Boolean).length > 0 && (
                   <div className="flex items-center gap-2">
                     {member.socialUrls.filter(Boolean).map((url) => (
-                      
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${member.name} on ${url}`}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-river-600 dark:hover:bg-neutral-800 dark:hover:text-river-400"
-                      >
+                      <a key={url} href={url} target="_blank" rel="noopener noreferrer" aria-label={`${member.name} on ${url}`} className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-river-600 dark:hover:bg-neutral-800 dark:hover:text-river-400">
                         <SocialIcon url={url} className="h-4 w-4" />
                       </a>
                     ))}
