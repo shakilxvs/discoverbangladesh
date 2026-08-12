@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { AdminNav } from '@/components/admin/AdminNav';
-import { sectionForPath } from '@/lib/roles';
+import { sectionForPath, defaultPathForRole } from '@/lib/roles';
 
 function Guard({ children }: { children: React.ReactNode }) {
   const { user, role, loading, can } = useAuth();
@@ -27,11 +27,11 @@ function Guard({ children }: { children: React.ReactNode }) {
       return;
     }
     if (!isLoginPage && user && role && !allowed) {
-      router.replace('/admin');
+      router.replace(defaultPathForRole(role));
       return;
     }
     if (isLoginPage && user && role) {
-      router.replace('/admin');
+      router.replace(defaultPathForRole(role));
     }
   }, [loading, user, role, allowed, isLoginPage, router]);
 
