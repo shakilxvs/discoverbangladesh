@@ -55,3 +55,32 @@ export function sectionForPath(pathname: string): AdminSection | null {
   const hit = map.find(([prefix]) => pathname.startsWith(prefix));
   return hit ? hit[1] : null;
 }
+
+// Reverse of the map above — needed so the guard can send someone
+// somewhere they're actually allowed to be, instead of always bouncing
+// back to '/admin' (Dashboard). A Moderator hitting '/admin' directly, or
+// landing there right after login, isn't allowed on Dashboard — sending
+// them back to '/admin' created an infinite redirect loop that looked
+// like the page was stuck loading forever.
+const SECTION_PATHS: Record<AdminSection, string> = {
+  dashboard: '/admin',
+  spots: '/admin/spots',
+  heroSlides: '/admin/hero-slides',
+  categories: '/admin/categories',
+  subCategories: '/admin/sub-categories',
+  districts: '/admin/districts',
+  comments: '/admin/comments',
+  about: '/admin/about',
+  siteIdentity: '/admin/site-identity',
+  privacy: '/admin/privacy',
+  users: '/admin/users',
+};
+
+// The first section (in ADMIN_SECTIONS order) this role is actually
+// allowed into — e.g. a Moderator lands on /admin/spots since Dashboard
+// isn't in their permission set.
+export function defaultPathForRole(role: Role | null): string {
+  if (!role) return '/admin/login';
+  const first = ADMIN_SECTIONS.find((s) => canAccess(role, s));
+  return first ? SECTION_PATHS[first] : '/admin/login';
+}
